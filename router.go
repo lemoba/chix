@@ -14,45 +14,18 @@ func NewRouter() *Router {
 	return &Router{chi.NewRouter()}
 }
 
-func (r *Router) Connect(pattern string, handlerFunc func(*Context)) {
-	r.Router.Connect(pattern, wrapHandler(handlerFunc))
+// NewRouterWith wraps an existing chi.Router
+func NewRouterWith(r chi.Router) *Router {
+	return &Router{r}
 }
 
-func (r *Router) Delete(pattern string, handlerFunc func(*Context)) {
-	r.Router.Delete(pattern, wrapHandler(handlerFunc))
-}
-
-func (r *Router) Get(pattern string, handlerFunc func(*Context)) {
-	r.Router.Get(pattern, wrapHandler(handlerFunc))
-}
-
-func (r *Router) Head(pattern string, handlerFunc func(*Context)) {
-	r.Router.Head(pattern, wrapHandler(handlerFunc))
-}
-
-func (r *Router) Options(pattern string, handlerFunc func(*Context)) {
-	r.Router.Options(pattern, wrapHandler(handlerFunc))
-}
-
-func (r *Router) Patch(pattern string, handlerFunc func(*Context)) {
-	r.Router.Patch(pattern, wrapHandler(handlerFunc))
-}
-
-func (r *Router) Post(pattern string, handlerFunc func(*Context)) {
-	r.Router.Post(pattern, wrapHandler(handlerFunc))
-}
-
-func (r *Router) Put(pattern string, handlerFunc func(*Context)) {
-	r.Router.Put(pattern, wrapHandler(handlerFunc))
-}
-
-func (r *Router) Trace(pattern string, handlerFunc func(*Context)) {
-	r.Router.Trace(pattern, wrapHandler(handlerFunc))
-}
-
-func wrapHandler(h func(*Context)) http.HandlerFunc {
+// wrapHandler binds a Context-aware handler to current Chix instance
+func (c *Chix) wrapHandler(h func(Context)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := NewContext(w, r)
+		ctx := NewContext(w, r, c)
+		if cc, ok := any(ctx).(*context); ok {
+			cc.handler = h
+		}
 		h(ctx)
 	}
 }
