@@ -12,7 +12,7 @@ type Request struct {
 }
 
 func Health(c chix.Context) {
-	c.Success("ok")
+	c.Success("ok!")
 }
 
 func SayHello(c chix.Context) {

@@ -1,7 +1,7 @@
 package chix
 
 import (
-	context2 "context"
+	stdContext "context"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-
 	"github.com/lemoba/chix/internal/middlewares"
 )
 
@@ -89,7 +88,7 @@ func New() *Chix {
 		JSONSerializer: DefaultJSONSerializer{},
 	}
 
-	c.router.Use(middlewares.RequestID)
+	c.router.Use(middlewares.RequestID())
 
 	return c
 }
@@ -102,7 +101,7 @@ func (c *Chix) Run(addr string) error {
 		Handler: c.router,
 	}
 
-	serverCtx, serverStopCtx := context2.WithCancel(context2.Background())
+	serverCtx, serverStopCtx := stdContext.WithCancel(stdContext.Background())
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -110,12 +109,12 @@ func (c *Chix) Run(addr string) error {
 	go func() {
 		<-sig
 		c.Logger.Info("Shutdown signal received")
-		shutdownCtx, cancel := context2.WithTimeout(serverCtx, 30*time.Second)
+		shutdownCtx, cancel := stdContext.WithTimeout(serverCtx, 30*time.Second)
 		defer cancel()
 
 		go func() {
 			<-shutdownCtx.Done()
-			if shutdownCtx.Err() == context2.DeadlineExceeded {
+			if shutdownCtx.Err() == stdContext.DeadlineExceeded {
 				c.Logger.Error("Graceful shutdown timed out, forcing exit")
 				os.Exit(1)
 			}
@@ -138,6 +137,12 @@ func (c *Chix) Run(addr string) error {
 	<-serverCtx.Done()
 	c.Logger.Info("Server exiting")
 	return nil
+}
+
+func (c *Chix) Use(middlewares ...func(http.Handler) http.Handler) {
+	for _, mw := range middlewares {
+		c.router.Use(mw)
+	}
 }
 
 func (c *Chix) Router() *Router {

@@ -12,7 +12,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 
-	chixMw "github.com/lemoba/chix/internal/middleware"
+	chixMw "github.com/lemoba/chix/internal/middlewares"
 	"github.com/lemoba/chix/pkg/errors"
 )
 
@@ -103,7 +103,7 @@ func NewContext(w http.ResponseWriter, r *http.Request, chix *Chix) *context {
 		response: w,
 		request:  r,
 		chix:     chix,
-		logger:   defaultLogger, // default use zap
+		logger:   defaultLogger,
 		store:    make(Map),
 	}
 }

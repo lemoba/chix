@@ -2,14 +2,14 @@ package main
 
 import (
 	"github.com/lemoba/chix"
-	"github.com/lemoba/chix/example/internal/handler/user"
+	"github.com/lemoba/chix/example/pkg/handler/user"
 )
 
 func main() {
-	r := chix.New()
+	c := chix.New()
 
-	r.Post("/name", user.SayHello)
-	r.Get("/health", user.Health)
+	c.Post("/name", user.SayHello)
+	c.Get("/health", user.Health)
 
-	r.Run(":3000")
+	c.Run(":3000")
 }
